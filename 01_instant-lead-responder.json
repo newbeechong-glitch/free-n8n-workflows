@@ -1,0 +1,247 @@
+{
+  "name": "Instant Lead Responder - Webhook to Sheets, Slack & Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "0bd3b251-ce9e-470f-a3fa-0f1dd399a446",
+      "name": "1. New Lead (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Connect your form (Typeform, Tally, Webflow, Meta Lead Ads via Make/Zapier bridge) to this webhook URL after import."
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst email = (d.email||'').trim().toLowerCase();\nconst name = (d.name||'').trim();\nconst budget = Number(d.budget||0);\nconst score = (email.includes('@')?40:0) + (budget>=1000?40:budget>0?20:0) + (d.phone?20:0);\nconst tier = score>=70?'HOT':score>=40?'WARM':'COLD';\nreturn [{ json: { name, email, phone: d.phone||'', company: d.company||'', message: d.message||'', budget, score, tier, received_at: new Date().toISOString() } }];"
+      },
+      "id": "13d4ed6e-9396-487e-a988-8f092ebcdd03",
+      "name": "2. Clean & Score Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Scores the lead 0-100 from email validity, budget and phone presence. Edit the weights to match your market."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "email": "={{ $json.email }}",
+            "phone": "={{ $json.phone }}",
+            "company": "={{ $json.company }}",
+            "tier": "={{ $json.tier }}",
+            "score": "={{ $json.score }}",
+            "received_at": "={{ $json.received_at }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "198ce9e8-41b8-4140-964b-43984e0724a0",
+      "name": "3. Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        680,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Pick your spreadsheet after import. Create headers first: name, email, phone, company, tier, score, received_at."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.tier }}",
+              "rightValue": "HOT",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5027d5fd-57ad-4fc4-a702-48bebd5cc30f",
+      "name": "4. Is HOT lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "channel": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "text": "=:fire: HOT lead: {{ $json.name }} ({{ $json.company }}) - score {{ $json.score }}. Email: {{ $json.email }} Phone: {{ $json.phone }}",
+        "otherOptions": {}
+      },
+      "id": "86df2c19-81c7-4861-a47a-08115dafe2a6",
+      "name": "5a. Alert Team on Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        180
+      ],
+      "notesInFlow": true,
+      "notes": "Posts to the channel you pick after import (e.g. #sales)."
+    },
+    {
+      "parameters": {
+        "email": "={{ $json.email }}",
+        "subject": "=Thanks for reaching out, {{ $json.name.split(' ')[0] }}",
+        "emailType": "text",
+        "message": "=Hi {{ $json.name }},\n\nThanks for getting in touch - we received your enquiry and a consultant will reply within one business hour.\n\nIf it is urgent, just reply to this email.\n\n- The Team",
+        "options": {}
+      },
+      "id": "9eda15d9-25b6-4c66-a219-88e95e18881a",
+      "name": "5b. Send Welcome Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Edit the copy to your brand voice. Connect your Gmail/Google Workspace account after import."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "status",
+              "value": "alerted",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dc1c1f50-0603-4b6f-a48f-c0655d3ce1cd",
+      "name": "6. Log Alert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1340,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "1. New Lead (Webhook)": {
+      "main": [
+        [
+          {
+            "node": "2. Clean & Score Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Clean & Score Lead": {
+      "main": [
+        [
+          {
+            "node": "3. Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Save to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "4. Is HOT lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Is HOT lead?": {
+      "main": [
+        [
+          {
+            "node": "5a. Alert Team on Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5b. Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5a. Alert Team on Slack": {
+      "main": [
+        [
+          {
+            "node": "6. Log Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "lead-gen"
+    }
+  ],
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
