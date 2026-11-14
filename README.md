@@ -2,7 +2,7 @@
 
 Ready-to-import n8n workflow templates for small businesses and agencies. No coding, plain-English setup guides, annotated node by node. This repo includes three free workflows — download the JSON files below and import them into n8n.
 
-## The shop grew: 35 products
+The shop grew: **41 products** at [ko-fi.com/workflowstash](https://ko-fi.com/workflowstash) — n8n templates and singles, small-business kits, and a new **Senior Essentials** shelf: six big-print, plain-language kits for older adults (emergency information organizer, scam protection handbook, password logbook, medication organizer, caregiver kit, smartphone guide). Everything is a one-time payment, delivered instantly.
 
 ### New n8n workflows
 
