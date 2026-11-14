@@ -1,20 +1,18 @@
 # Free n8n Workflows — WorkflowStash
 
-Ready-to-import n8n workflow templates for small businesses and agencies. No coding, plain-English setup guides, annotated node by node.
+Ready-to-import n8n workflow templates for small businesses and agencies. No coding, plain-English setup guides, annotated node by node. This repo includes three free workflows — download the JSON files below and import them into n8n.
 
-## Free download
+## Free workflows
 
-**Instant Lead Responder** (`01_instant-lead-responder.json`)
-Form webhook → lead scored 0–100 → saved to Google Sheets → HOT leads ping Slack in seconds + a welcome email from Gmail. Import the JSON into n8n, connect your accounts, done in about 15 minutes.
+1. **Instant Lead Responder** (`01_instant-lead-responder.json`) — New form lead → instant auto-reply + sheet log. Form webhook → lead scored 0–100 → saved to Google Sheets → HOT leads ping Slack in seconds + a welcome email from Gmail. Import the JSON into n8n, connect your accounts, done in about 15 minutes.
+2. **Review Request Automator** (`02_review-request-automator.json`) — Job marked done → polite review request, never asks twice. Emails happy customers a Google-review request 3–30 days after the job.
+3. **Content Repurposer** (`03_rss-to-ai-social-drafts.json`) — RSS post → AI-drafted social posts for review. RSS → AI drafts a LinkedIn post, an X post and a video hook, saved for your approval. Nothing posts without a human.
 
 ## Want the full pack?
 
-The **Lead & Content Automation Pack** adds:
-- **Review Request Automator** — emails happy customers a Google-review request 3–30 days after the job, never asks anyone twice.
-- **Content Repurposer** — RSS → AI drafts a LinkedIn post, an X post and a video hook, saved for your approval. Nothing posts without a human.
-
-Launch price **$29** (list $59): https://ko-fi.com/s/4b5ee09c2f
+The **Lead & Content Automation Pack** bundles all three workflows with setup guides and worked examples. Launch price **$29** (list $59): https://ko-fi.com/s/4b5ee09c2f — use launch code **LAUNCH20** for 20% off.
 More at https://workflowstash.com — support@workflowstash.com
+
 ## Full catalog at WorkflowStash
 
 - **Lead & Content Automation Pack for n8n** — all 3 workflows + full guide, $29 (launch week: code LAUNCH20 = extra 20% off): https://ko-fi.com/s/4b5ee09c2f
