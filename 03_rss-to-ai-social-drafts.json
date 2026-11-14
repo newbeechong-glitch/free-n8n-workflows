@@ -1,0 +1,215 @@
+{
+  "name": "Content Repurposer - RSS to AI social media drafts",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://example.com/feed.xml",
+        "options": {}
+      },
+      "id": "fa7471cf-9d0b-40d8-b52f-b2917e490856",
+      "name": "1. RSS Feed Trigger",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Replace with your blog or niche news feed URL. Poll interval is set in the workflow settings after import."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "prompt",
+              "value": "=You are a social media editor. From the article titled \"{{ $json.title }}\" ({{ $json.link }}), write: 1) one LinkedIn post (max 120 words, professional, 3 hashtags), 2) one X post (max 240 characters, punchy, 2 hashtags), 3) one short hook line for a video. Return plain text with clear labels.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cb1fd902-a99b-4fc7-adda-a53d08016579",
+      "name": "2. Build AI Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\"role\": \"user\", \"content\": \"{{ $json.prompt }}\"}\n  ]\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "5b372b01-5da1-4197-9669-27081a44b2b4",
+      "name": "3. OpenAI Draft (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Add an HTTP Header Auth credential: name 'Authorization', value 'Bearer YOUR_OPENAI_API_KEY'. Swap the model in the body if you prefer."
+    },
+    {
+      "parameters": {
+        "jsCode": "const j=$input.first().json; const text=j.choices?.[0]?.message?.content||''; return [{json:{ title: $('2. Build AI Prompt').first().json.title, link: $('2. Build AI Prompt').first().json.link, drafts: text, created_at: new Date().toISOString() }}];"
+      },
+      "id": "98142642-640a-4654-8430-65c9358591cf",
+      "name": "4. Extract Draft Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "link": "={{ $json.link }}",
+            "drafts": "={{ $json.drafts }}",
+            "created_at": "={{ $json.created_at }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "4857cf38-afbd-444e-ac2b-c91264e42f53",
+      "name": "5. Save Drafts to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1120,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Headers needed: title, link, drafts, created_at. Review drafts in the sheet, copy-paste to post. Human-in-the-loop by design."
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "=New content drafts ready for: {{ $json.title }}\n{{ $json.link }}",
+        "additionalFields": {},
+        "options": {}
+      },
+      "id": "681959bb-dba2-4f18-9094-05dbe3d2d17a",
+      "name": "6. Notify on Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1340,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Optional: add your Telegram chat ID and bot credential, or delete this node."
+    }
+  ],
+  "connections": {
+    "1. RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "2. Build AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Build AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "3. OpenAI Draft (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. OpenAI Draft (HTTP)": {
+      "main": [
+        [
+          {
+            "node": "4. Extract Draft Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Extract Draft Text": {
+      "main": [
+        [
+          {
+            "node": "5. Save Drafts to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Save Drafts to Sheet": {
+      "main": [
+        [
+          {
+            "node": "6. Notify on Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "content"
+    }
+  ],
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

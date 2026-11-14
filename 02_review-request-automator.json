@@ -1,0 +1,180 @@
+{
+  "name": "Review Request Automator - Daily Google review requests via Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "29a39ce5-23ed-47f2-ab30-24bcb74e4200",
+      "name": "1. Daily Check (09:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Runs every day at 09:00. Adjust the hour to your timezone in the node settings."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "options": {}
+      },
+      "id": "7cb2fe18-564c-4e29-8580-d18ecccc7aa8",
+      "name": "2. Read Customers Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        460,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Sheet columns needed: name, email, job_done_date (YYYY-MM-DD), review_requested (yes/no)."
+    },
+    {
+      "parameters": {
+        "jsCode": "const out=[];\nconst now=new Date();\nfor (const it of $input.all()) { const j=it.json; const done=new Date(j.job_done_date); const days=(now-done)/86400000; if (days>=3 && days<=30 && String(j.review_requested).toLowerCase()!=='yes') out.push({json:j}); }\nreturn out;"
+      },
+      "id": "47d917c0-14ef-4dfa-b3f0-7ccfe7a24aaf",
+      "name": "3. Filter: Due & Not Asked",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Sends a request 3-30 days after the job is done, only if review_requested is not 'yes'. Tune the window here."
+    },
+    {
+      "parameters": {
+        "email": "={{ $json.email }}",
+        "subject": "=How did we do, {{ $json.name.split(' ')[0] }}?",
+        "emailType": "text",
+        "message": "=Hi {{ $json.name }},\n\nThanks again for choosing us. If you were happy with the work, a short Google review helps a small business like ours more than any ad:\n\n[PASTE YOUR GOOGLE REVIEW LINK HERE]\n\nAnything we could have done better? Just reply - we read everything.\n\n- The Team",
+        "options": {}
+      },
+      "id": "531da029-e78a-4722-b15a-5cfe79f4a88a",
+      "name": "4. Send Review Request (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Paste your Google review short link into the message before activating."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $json.email }}",
+            "review_requested": "yes"
+          }
+        },
+        "options": {}
+      },
+      "id": "33389e29-d486-4d60-af07-357a676ab74f",
+      "name": "5. Mark as Requested",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1120,
+        300
+      ],
+      "notesInFlow": true,
+      "notes": "Matches rows by email and sets review_requested = yes so nobody is asked twice."
+    }
+  ],
+  "connections": {
+    "1. Daily Check (09:00)": {
+      "main": [
+        [
+          {
+            "node": "2. Read Customers Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Read Customers Sheet": {
+      "main": [
+        [
+          {
+            "node": "3. Filter: Due & Not Asked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Filter: Due & Not Asked": {
+      "main": [
+        [
+          {
+            "node": "4. Send Review Request (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Send Review Request (Gmail)": {
+      "main": [
+        [
+          {
+            "node": "5. Mark as Requested",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "reviews"
+    }
+  ],
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
