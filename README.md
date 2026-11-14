@@ -2,7 +2,7 @@
 
 Ready-to-import n8n workflow templates for small businesses and agencies. No coding, plain-English setup guides, annotated node by node. This repo includes three free workflows — download the JSON files below and import them into n8n.
 
-The shop grew: **47 products** at [ko-fi.com/workflowstash](https://ko-fi.com/workflowstash) — n8n templates and singles, small-business kits, and a new **Senior Essentials** shelf: six big-print, plain-language kits for older adults (emergency information organizer, scam protection handbook, password logbook, medication organizer, caregiver kit, smartphone guide). Everything is a one-time payment, delivered instantly. A second new shelf, **Office & Career**, covers working professionals: performance reviews, meeting survival, 60 professional emails, Excel cheat sheets, interview prep and focus planning.
+The shop grew: **65 products** at [ko-fi.com/workflowstash](https://ko-fi.com/workflowstash) — n8n templates and singles, small-business kits, and a new **Senior Essentials** shelf: six big-print, plain-language kits for older adults (emergency information organizer, scam protection handbook, password logbook, medication organizer, caregiver kit, smartphone guide). Everything is a one-time payment, delivered instantly. A second new shelf, **Office & Career**, covers working professionals: performance reviews, meeting survival, 60 professional emails, Excel cheat sheets, interview prep and focus planning.
 
 ### New n8n workflows
 
@@ -52,3 +52,7 @@ More at https://workflowstash.com — support@workflowstash.com
 - **Google Business Profile Booster Kit** — posts, review replies & photo checklist, $11: https://ko-fi.com/s/a23dbbcd46
 - **100 AI Prompts for Local Business Marketing** — $9: https://ko-fi.com/s/848aeb3799
 - The 3 n8n workflows are also sold individually at $12 each in the shop: https://ko-fi.com/workflowstash/shop
+
+### New shelves — For Her, Students, Researchers & Academics
+
+Three new shelves joined the shop: **For Her — planners & resets**, **Students** and **Researchers & Academics** — planners and kits for habits, money, study, research and more. Browse them all in the [shop](https://ko-fi.com/workflowstash/shop).
