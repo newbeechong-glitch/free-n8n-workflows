@@ -2,6 +2,14 @@
 
 Ready-to-import n8n workflow templates for small businesses and agencies. No coding, plain-English setup guides, annotated node by node. This repo includes three free workflows — download the JSON files below and import them into n8n.
 
+## New in the shop
+
+- **Invoice Chaser for n8n** — $19 — automatic late-payment reminders (a bigger sibling of the free workflows here): https://ko-fi.com/s/528e2c4098
+- **Client Onboarding Kit for Freelancers & Small Agencies** — $19: https://ko-fi.com/s/17d921cc7e
+- **Never Miss a Booking — No-Show & Missed-Call Recovery Kit** — $17: https://ko-fi.com/s/eba8ae5955
+- **Airbnb Host Message System — 64 guest messages** — $17: https://ko-fi.com/s/87679c51b4
+- **Short-Form Video Hook System — 300 hooks by industry** — $12: https://ko-fi.com/s/a78844adeb
+
 ## Free workflows
 
 1. **Instant Lead Responder** (`01_instant-lead-responder.json`) — New form lead → instant auto-reply + sheet log. Form webhook → lead scored 0–100 → saved to Google Sheets → HOT leads ping Slack in seconds + a welcome email from Gmail. Import the JSON into n8n, connect your accounts, done in about 15 minutes.
