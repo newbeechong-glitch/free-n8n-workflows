@@ -2,13 +2,33 @@
 
 Ready-to-import n8n workflow templates for small businesses and agencies. No coding, plain-English setup guides, annotated node by node. This repo includes three free workflows — download the JSON files below and import them into n8n.
 
-## New in the shop
+## The shop grew: 35 products
 
-- **Invoice Chaser for n8n** — $19 — automatic late-payment reminders (a bigger sibling of the free workflows here): https://ko-fi.com/s/528e2c4098
-- **Client Onboarding Kit for Freelancers & Small Agencies** — $19: https://ko-fi.com/s/17d921cc7e
-- **Never Miss a Booking — No-Show & Missed-Call Recovery Kit** — $17: https://ko-fi.com/s/eba8ae5955
-- **Airbnb Host Message System — 64 guest messages** — $17: https://ko-fi.com/s/87679c51b4
-- **Short-Form Video Hook System — 300 hooks by industry** — $12: https://ko-fi.com/s/a78844adeb
+### New n8n workflows
+
+- **Meeting Notes to Tasks** — $15: https://ko-fi.com/s/56f1a0d614
+- **Order Alert & Daily Sales Digest** — $15: https://ko-fi.com/s/abef131d93
+- **Job Application Tracker** — $15: https://ko-fi.com/s/ae6bb3cfd0
+- **Price Watch** — $15: https://ko-fi.com/s/b5881b0554
+- **Social Inbox Digest** — $15: https://ko-fi.com/s/1a950b61c4
+- **Review Monitor & Reply Assistant** — $17: https://ko-fi.com/s/741d5af7e5
+
+### New kits
+
+- **Real Estate Agent Kit** — $17: https://ko-fi.com/s/3b43603bcc
+- **Shopify Seller Kit** — $17: https://ko-fi.com/s/2480016acc
+- **Course Launch Kit** — $19: https://ko-fi.com/s/77e5a2c1b1
+- **Pricing & Negotiation Scripts** — $12: https://ko-fi.com/s/b855da5429
+- **Restaurant Kit** — $15: https://ko-fi.com/s/7138c2bce6
+- **Cleaning Kit** — $15: https://ko-fi.com/s/bc0774aae9
+- **Trades Kit** — $15: https://ko-fi.com/s/8a861b472e
+- **Pet Kit** — $12: https://ko-fi.com/s/668628790c
+- **Newsletter Kit** — $12: https://ko-fi.com/s/d5cbee800a
+- **LinkedIn Kit** — $12: https://ko-fi.com/s/a6ef9a78cd
+- **Year-End Bookkeeping Kit** — $15: https://ko-fi.com/s/819d54f896
+- **Coaching Kit** — $17: https://ko-fi.com/s/0cb287799c
+- **100 Prompts for Real Estate** — $9: https://ko-fi.com/s/b683db305b
+- **100 Prompts for Restaurants** — $9: https://ko-fi.com/s/f830e5c7eb
 
 ## Free workflows
 
@@ -19,6 +39,7 @@ Ready-to-import n8n workflow templates for small businesses and agencies. No cod
 ## Want the full pack?
 
 The **Lead & Content Automation Pack** bundles all three workflows with setup guides and worked examples. Launch price **$29** (list $59): https://ko-fi.com/s/4b5ee09c2f — use launch code **LAUNCH20** for 20% off.
+
 More at https://workflowstash.com — support@workflowstash.com
 
 ## Full catalog at WorkflowStash
