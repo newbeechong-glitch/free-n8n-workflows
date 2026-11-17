@@ -126,11 +126,11 @@
     },
     {
       "parameters": {
-        "email": "={{ $json.email }}",
         "subject": "=Thanks for reaching out, {{ $json.name.split(' ')[0] }}",
         "emailType": "text",
         "message": "=Hi {{ $json.name }},\n\nThanks for getting in touch - we received your enquiry and a consultant will reply within one business hour.\n\nIf it is urgent, just reply to this email.\n\n- The Team",
-        "options": {}
+        "options": {},
+        "sendTo": "={{ $json.email }}"
       },
       "id": "9eda15d9-25b6-4c66-a219-88e95e18881a",
       "name": "5b. Send Welcome Email",
@@ -164,6 +164,102 @@
       "position": [
         1340,
         180
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## What this workflow does\n\nEvery time someone fills in your contact or quote form, this workflow jumps in within seconds:\n\n1. It tidies up the lead's details and gives them a simple score.\n2. It saves the lead to a Google Sheet, so nothing ever gets lost.\n3. If the lead looks **HOT** (a real email, a phone number, and a budget of $1,000+), it alerts your team on Slack and sends the lead a friendly \"thanks, we'll reply within one business hour\" email automatically.\n\nYou never have to copy-paste form submissions again — new leads are logged, scored, and followed up while you're busy doing the actual work.",
+        "height": 260,
+        "width": 760,
+        "color": 7
+      },
+      "id": "7425374d-551d-440f-bbfc-189461f59fc3",
+      "name": "Sticky Note - Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup — do this once before switching it on\n\n1. **Google Sheets:** open node **3** and connect your Google account. Pick (or create) the spreadsheet where leads should be saved. Make sure the first row has these headers: `name, email, phone, company, tier, score, received_at`.\n2. **Slack:** open node **5a**, connect your Slack workspace, and choose the channel that should get hot-lead alerts (for example #sales).\n3. **Gmail:** open node **5b** and connect the Gmail account the welcome email should be sent from. You can edit the email wording in that node — it's plain text.\n4. **Your form:** after you activate the workflow, copy the Production URL of node **1** (the webhook, path `new-lead`) and paste it into your form tool (Typeform, Tally, Webflow, your website form, etc.) so every submission is sent there.\n5. **Test it:** submit your own form once with a budget of 1000 or more and check that a row appears in the Sheet, a message lands in Slack, and the welcome email arrives.\n6. **Activate:** flip the **Active** toggle at the top of the canvas. Done — it now runs on its own.",
+        "height": 360,
+        "width": 940,
+        "color": 5
+      },
+      "id": "c3c3b679-6a1c-4a8c-b52b-3ad3ed596be3",
+      "name": "Sticky Note - Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 1 · A new lead arrives\n\nNode **1** is a webhook — a private web address that listens day and night. Whenever your form sends a new submission to it, the workflow starts.\n\nYour only job: point your form at this webhook's Production URL (see the Setup note below).",
+        "height": 560,
+        "width": 300,
+        "color": 4
+      },
+      "id": "d55c0650-a19d-4985-9c69-f947ca10def2",
+      "name": "Sticky Note - 1 A new lead arrives",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 2 · Clean & score\n\nNode **2** tidies the submission (trims spaces, lowercases the email) and scores it out of 100:\n\n- Valid email: +40\n- Budget $1,000+: +40 (any budget: +20)\n- Phone number given: +20\n\n70+ = **HOT**, 40–69 = **WARM**, under 40 = **COLD**. Want stricter or looser scoring? Edit the numbers in this node's code — or just leave them, they suit most small businesses.",
+        "height": 560,
+        "width": 300,
+        "color": 3
+      },
+      "id": "353331e9-9da0-4a6a-b562-e799653417cd",
+      "name": "Sticky Note - 2 Clean and score",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 3 · Save the lead\n\nNode **3** adds every lead — hot, warm, or cold — as a new row in your Google Sheet, together with its score and tier.\n\nNothing is ever skipped, so the Sheet becomes your simple lead register. Just make sure the Sheet you pick in Setup has the header row listed there.",
+        "height": 560,
+        "width": 300,
+        "color": 2
+      },
+      "id": "e3c21cff-7a84-4364-bf6b-6169273518f5",
+      "name": "Sticky Note - 3 Save the lead",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 4 · Hot-lead alerts\n\nNode **4** asks one question: is this lead **HOT**?\n\n- **Yes:** node **5a** posts an alert to your Slack channel, node **5b** emails the lead a welcome message promising a reply within one business hour, and node **6** marks the lead as \"alerted\".\n- **No:** nothing else happens — warm and cold leads simply stay in your Sheet for you to follow up when you have time.\n\nEdit the welcome email text in node **5b** so it sounds like you.",
+        "height": 560,
+        "width": 760,
+        "color": 6
+      },
+      "id": "6cb1f66a-6bd8-4b4b-8117-3b83f7766c73",
+      "name": "Sticky Note - 4 Hot-lead alerts",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        860,
+        120
       ]
     }
   ],

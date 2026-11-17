@@ -177,6 +177,102 @@
       ],
       "notesInFlow": true,
       "notes": "Optional: add your Telegram chat ID and bot credential, or delete this node."
+    },
+    {
+      "parameters": {
+        "content": "## What this workflow does\n\nPublished a new blog post or article? This workflow turns it into social media drafts for you:\n\n1. It watches your blog's RSS feed and spots each new article.\n2. It checks a Google Sheet log so it never drafts the same article twice.\n3. It asks AI (OpenAI) to write a LinkedIn post, a short X post, and a one-line video hook from the article.\n4. It saves the drafts to your Google Sheet and pings you on Telegram so you can review, tweak, and post them.\n\nYou stay in control — it only ever prepares drafts, it never posts anything by itself.",
+        "height": 260,
+        "width": 860,
+        "color": 7
+      },
+      "id": "10f15fe1-7542-4a85-ab2b-660cb348d470",
+      "name": "Sticky Note - Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup — do this once before switching it on\n\n1. **Your feed:** open node **1** and replace `https://example.com/feed.xml` with your real RSS feed address (most blogs have one at yoursite.com/feed or /rss).\n2. **Draft log Sheet:** create a Google Sheet to store drafts, with headers `title, link, drafts, created_at`. Open nodes **2** and **7**, connect your Google account, and pick that same Sheet in both.\n3. **OpenAI key:** open node **5**, and in its Header Auth credential paste your OpenAI API key (from platform.openai.com → API keys). The workflow uses the low-cost `gpt-4o-mini` model; you can change the model name in the node's request body.\n4. **Telegram:** open node **8**, connect your Telegram bot credential, and fill in your chat ID so the \"drafts ready\" ping reaches you. (Don't want the ping? Just delete node **8** — everything else still works.)\n5. **Make it yours (optional):** node **4** holds the writing instructions for the AI. Edit the prompt text there to change the tone, the platforms, or the lengths.\n6. **How often:** the RSS node checks the feed on the interval set inside node **1** — open it and pick how often suits you.\n7. **Test, then activate:** run it once manually, confirm a draft lands in your Sheet, then flip the **Active** toggle.",
+        "height": 380,
+        "width": 1020,
+        "color": 5
+      },
+      "id": "5b0621c0-0a35-4cd5-9009-37f78eb27dc8",
+      "name": "Sticky Note - Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 1 · A new article appears\n\nNode **1** watches your RSS feed and brings in new articles. Node **2** reads your draft log Sheet — the list of everything already drafted.\n\nThe log is the workflow's memory: if an article is already in there, it will be skipped in the next step, even if the feed shows it again.",
+        "height": 420,
+        "width": 400,
+        "color": 4
+      },
+      "id": "77ea1ebc-9d78-4a3c-aa41-2926f2e509b4",
+      "name": "Sticky Note - 1 New article appears",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        500,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 2 · Draft with AI\n\nNode **3** drops any article whose link is already in the log. Node **4** builds the writing brief: one LinkedIn post, one X post, and one video hook line.\n\nNode **5** sends that brief to OpenAI and gets the three drafts back. Want a different style? Edit the brief in node **4** — no code needed.",
+        "height": 420,
+        "width": 560,
+        "color": 3
+      },
+      "id": "a3ed9508-7c89-4da9-8630-befe1b415605",
+      "name": "Sticky Note - 2 Draft with AI",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        840,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 3 · Clean up the result\n\nNode **6** pulls just the draft text out of OpenAI's reply and pairs it with the article's title and link, plus today's date.\n\nYou don't need to change anything here — it just tidies up so the next step can save a clean row.",
+        "height": 420,
+        "width": 300,
+        "color": 2
+      },
+      "id": "b9317541-b79d-4a21-b29c-4488a8be67b6",
+      "name": "Sticky Note - 3 Clean up the result",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 4 · Save & notify\n\nNode **7** saves the drafts as a new row in your Google Sheet — this also adds the article to the log, so it's never drafted twice.\n\nNode **8** then sends you a short Telegram message with the article title and link, so you know fresh drafts are waiting for your review.",
+        "height": 420,
+        "width": 460,
+        "color": 6
+      },
+      "id": "547afd4f-139a-41c3-9d26-ae5be1e6ee67",
+      "name": "Sticky Note - 4 Save and notify",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        120
+      ]
     }
   ],
   "connections": {

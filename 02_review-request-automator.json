@@ -67,11 +67,11 @@
     },
     {
       "parameters": {
-        "email": "={{ $json.email }}",
         "subject": "=How did we do, {{ $json.name.split(' ')[0] }}?",
         "emailType": "text",
         "message": "=Hi {{ $json.name }},\n\nThanks again for choosing us. If you were happy with the work, a short Google review helps a small business like ours more than any ad:\n\n[PASTE YOUR GOOGLE REVIEW LINK HERE]\n\nAnything we could have done better? Just reply - we read everything.\n\n- The Team",
-        "options": {}
+        "options": {},
+        "sendTo": "={{ $json.email }}"
       },
       "id": "531da029-e78a-4722-b15a-5cfe79f4a88a",
       "name": "4. Send Review Request (Gmail)",
@@ -116,6 +116,86 @@
       ],
       "notesInFlow": true,
       "notes": "Matches rows by email and sets review_requested = yes so nobody is asked twice."
+    },
+    {
+      "parameters": {
+        "content": "## What this workflow does\n\nHappy customers rarely leave a Google review unless someone asks at the right moment. This workflow asks for you:\n\n1. Every morning at 9:00 it opens your customer spreadsheet.\n2. It finds customers whose job finished **3–30 days ago** and who haven't been asked yet.\n3. It emails each of them a short, friendly review request from your Gmail, with your Google review link.\n4. It marks them as \"asked\" in the Sheet, so nobody ever gets asked twice.\n\nFive minutes of setup, then your reviews grow on autopilot.",
+        "height": 260,
+        "width": 760,
+        "color": 7
+      },
+      "id": "bd04d28f-528f-43be-83d6-ebacde4d3756",
+      "name": "Sticky Note - Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup — do this once before switching it on\n\n1. **Your customer Sheet:** you need one Google Sheet where each row is a finished job, with columns including `name`, `email`, `job_done_date` (the date the work was completed) and `review_requested` (leave it blank — the workflow fills in \"yes\").\n2. **Reading the Sheet:** open node **2**, connect your Google account, and pick that spreadsheet.\n3. **Gmail:** open node **4** and connect the Gmail account the requests should come from.\n4. **Your review link:** in node **4**, replace `[PASTE YOUR GOOGLE REVIEW LINK HERE]` in the email text with your real Google review link (find it in your Google Business Profile under \"Ask for reviews\").\n5. **Writing it down:** open node **5**, connect the same Google account, and pick the **same** spreadsheet, so the workflow can mark each customer as asked.\n6. **Timing (optional):** node **1** runs daily at 09:00. Open it if you'd like a different time.\n7. **Test, then activate:** run it once manually with one test row about a week old, check the email arrives and the row gets marked, then flip the **Active** toggle.",
+        "height": 380,
+        "width": 940,
+        "color": 5
+      },
+      "id": "75f86320-aea9-46e5-9ca1-07e78fe072f5",
+      "name": "Sticky Note - Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 1 · Every morning at 9\n\nNode **1** is a simple timer. It wakes the workflow up once a day at 09:00 — no button to press, nothing to remember.\n\nWant a different time? Open the node and change the hour.",
+        "height": 420,
+        "width": 300,
+        "color": 4
+      },
+      "id": "ab5b2873-bbf9-4c7d-8876-2470ff9dc17a",
+      "name": "Sticky Note - 1 Every morning at 9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 2 · Find who's due a request\n\nNode **2** reads your customer Sheet. Node **3** then keeps only the people who are due:\n\n- The job finished **at least 3 days ago** (not too soon)…\n- …but **no more than 30 days ago** (not too late)…\n- …and `review_requested` is **not** already \"yes\".\n\nEveryone else is skipped. To change the 3–30 day window, edit the two numbers in node **3**.",
+        "height": 420,
+        "width": 480,
+        "color": 3
+      },
+      "id": "7038ea2d-9338-4dc9-a89c-4b8560ecfb41",
+      "name": "Sticky Note - 2 Find who is due",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 3 · Send & mark done\n\nNode **4** sends each due customer a personal review-request email from your Gmail — it uses their first name and includes your Google review link.\n\nNode **5** then writes \"yes\" into that customer's `review_requested` column in the same Sheet, so they are never asked again.\n\nMake sure you pasted your real review link into node **4** (see Setup) — the placeholder text won't work.",
+        "height": 420,
+        "width": 560,
+        "color": 6
+      },
+      "id": "61328feb-fdc6-41fc-b8e2-f181c01a3562",
+      "name": "Sticky Note - 3 Send and mark done",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        840,
+        120
+      ]
     }
   ],
   "connections": {
