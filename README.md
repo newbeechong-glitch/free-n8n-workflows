@@ -27,6 +27,6 @@ Prefer one at a time? Each workflow is also sold singly at $12 in the shop, and 
 
 ## The shop
 
-68 paid products and 3 services at [ko-fi.com/workflowstash](https://ko-fi.com/workflowstash) — n8n templates, small-business kits, spreadsheet and email packs, plus three $79 Vault bundles that group the shelves. Full catalog: https://workflowstash.com
+70 paid products, 1 free download and 3 services at [ko-fi.com/workflowstash](https://ko-fi.com/workflowstash) — n8n templates, small-business kits, spreadsheet and email packs, plus three $79 Vault bundles that group the shelves. Full catalog: https://workflowstash.com
 
 Questions: support@workflowstash.com
