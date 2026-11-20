@@ -1,0 +1,440 @@
+{
+  "name": "Gmail Attachment Saver - Auto-Save Email Attachments to Google Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "id": "1fe6ed91-3cf2-4303-8ff3-9f7b8e62f38d",
+      "name": "1. New Email Arrives",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Polls your Gmail every hour for new mail. IMPORTANT: 'Simple' is OFF on purpose - with Simple on, n8n strips attachments out of the trigger output and nothing will ever be saved."
+    },
+    {
+      "parameters": {
+        "jsCode": "// One output item per attachment.\n// Emails without attachments produce no items, so the run simply ends.\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json || {};\n  const binary = item.binary || {};\n  const keys = Object.keys(binary);\n  if (!keys.length) continue;\n\n  let sender = 'unknown-sender';\n  if (typeof j.from === 'string' && j.from) sender = j.from;\n  else if (j.from && Array.isArray(j.from.value) && j.from.value[0] && j.from.value[0].address) sender = j.from.value[0].address;\n  else if (j.from && j.from.text) sender = j.from.text;\n\n  const messageId = j.id || j.messageId || '';\n  const subject = j.subject || '(no subject)';\n  const receivedAt = j.date || j.internalDate || '';\n\n  keys.forEach((key, idx) => {\n    const bin = binary[key] || {};\n    out.push({\n      json: {\n        message_id: String(messageId),\n        sender: String(sender),\n        subject: String(subject),\n        received_at: String(receivedAt),\n        file_name: bin.fileName || `attachment-${idx + 1}`,\n        mime_type: bin.mimeType || 'application/octet-stream',\n      },\n      binary: { data: bin },\n    });\n  });\n}\nreturn out;"
+      },
+      "id": "f045ddc3-fab2-41e9-8f3b-d3c328256bd9",
+      "name": "2. Extract Attachments",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Turns each email into one item per attachment. The file itself travels as binary data named 'data'; sender, subject and message ID travel with it. Emails with no attachments produce no items and the run ends here."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "message_id",
+              "lookupValue": "={{ $json.message_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2f21c056-a851-4ede-832e-831305f1e27d",
+      "name": "3. Check Saved Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        680,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Looks the message ID up in your Attachment Log sheet. Any rows that come back are candidates for 'already saved' - node 4 makes the final call by file name too."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Compare every extracted attachment against the Attachment Log.\n// An attachment counts as saved only when BOTH the message ID and the\n// file name already appear in the log.\nconst attachments = $('2. Extract Attachments').all();\nconst rows = $input.all().map(r => r.json || {});\nreturn attachments.map((att, i) => {\n  const a = att.json || {};\n  const dupe = rows.some(r =>\n    String(r.message_id || '') === String(a.message_id || '') &&\n    String(r.file_name || '') === String(a.file_name || '')\n  );\n  return { json: { ...a, already_saved: dupe }, binary: att.binary, pairedItem: { item: i } };\n});"
+      },
+      "id": "97efccb1-f817-490e-af30-50b7f66f3444",
+      "name": "4. Flag Already Saved",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Marks each attachment already_saved only when BOTH the message ID and the file name are already in the log. Gmail triggers can re-fire on old mail - this flag is what stops duplicate files piling up in Drive."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.already_saved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "166b097c-6c91-45d0-96f0-8131bee72ccd",
+      "name": "5. Already Saved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "TRUE (top output) = already in Drive, skip it. FALSE (bottom output) = new file, save it."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "status",
+              "value": "already saved - skipped",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1f8aae30-4a61-4510-9d71-a9ab1b2007e9",
+      "name": "5a. Skip - Already in Drive",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        720
+      ],
+      "notesInFlow": true,
+      "notes": "Dead end on purpose: this attachment is already in Drive and already logged, so the run stops here for this item."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a Drive-safe, unique file name: 2026-01-31_sender_original-name.pdf\n// The date prefix keeps files sorted and stops same-name overwrites.\nfunction slug(s) {\n  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'file';\n}\nreturn $input.all().map((item, i) => {\n  const a = item.json || {};\n  const d = new Date(a.received_at || Date.now());\n  const datePart = isNaN(d) ? 'undated' : d.toISOString().slice(0, 10);\n  const senderPart = slug(String(a.sender || '').split('@')[0]);\n  const safeName = String(a.file_name || 'attachment').replace(/[\\\\/:*?\"<>|]/g, '-').trim();\n  return {\n    json: { ...a, drive_file_name: `${datePart}_${senderPart}_${safeName}` },\n    binary: item.binary,\n    pairedItem: { item: i },\n  };\n});"
+      },
+      "id": "8b72a5b8-c7dc-4231-a84e-3267cadd1b7d",
+      "name": "6. Rename File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Builds the Drive file name: date_sender_original-name. Sorted by date, grouped by sender, and two files with the same original name can never overwrite each other."
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "data",
+        "name": "={{ $json.drive_file_name }}",
+        "operation": "upload",
+        "options": {},
+        "resource": "file",
+        "simplifyOutput": true
+      },
+      "id": "cd351ef0-fa26-43ab-a471-8569b0177beb",
+      "name": "7. Save to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Uploads the attachment to your Google Drive. After importing, open this node and pick the destination folder (create one called 'Email Attachments' first if you like) - otherwise files land in your Drive root."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge the Drive upload result with the email metadata into one log row.\nconst meta = $('6. Rename File').all();\nreturn $input.all().map((item, i) => {\n  const m = (meta[i] && meta[i].json) || {};\n  const drive = item.json || {};\n  return {\n    json: {\n      saved_at: new Date().toISOString(),\n      file_name: m.file_name || '',\n      drive_file_name: m.drive_file_name || drive.name || '',\n      sender: m.sender || '',\n      subject: m.subject || '',\n      message_id: m.message_id || '',\n      drive_link: drive.webViewLink || '',\n      drive_id: drive.id || '',\n    },\n  };\n});"
+      },
+      "id": "1777f1c3-188e-4125-a2bc-af352b94e3c5",
+      "name": "8. Prepare Log Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Combines the Drive result (file ID and link) with the email metadata into the single row that gets written to the log."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "saved_at": "={{ $json.saved_at }}",
+            "file_name": "={{ $json.file_name }}",
+            "drive_file_name": "={{ $json.drive_file_name }}",
+            "sender": "={{ $json.sender }}",
+            "subject": "={{ $json.subject }}",
+            "message_id": "={{ $json.message_id }}",
+            "drive_link": "={{ $json.drive_link }}",
+            "drive_id": "={{ $json.drive_id }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "01a6903c-72a5-4a29-8ee0-b776217fee5e",
+      "name": "9. Log to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        2000,
+        420
+      ],
+      "notesInFlow": true,
+      "notes": "Appends one row per saved file to your Attachment Log - the same sheet node 3 checks, which is what makes the dedupe work on the next run."
+    },
+    {
+      "parameters": {
+        "content": "## Gmail Attachment Saver - what this does\n\nEvery hour this workflow checks your Gmail for new emails, pulls out every attachment, saves each file to Google Drive with a tidy name (date_sender_original-name), and writes one row per file to a Google Sheet so you can find who sent what, and when.\n\nBuilt for small businesses drowning in emailed invoices, receipts, signed forms and supplier PDFs that currently live - and get lost - inside the inbox.\n\n- No attachment? The email is ignored and nothing is written anywhere.\n- Same attachment twice? A log check stops it being saved twice.\n- Nothing is deleted, moved or labelled in your Gmail. The workflow only reads.\n\nHonest note: this file is structure-checked - the JSON parses, every connection points at a real node, and the Code nodes were reviewed line by line. It has not been live-import-tested in a running n8n instance, so allow 15 minutes for setup and expect to pick your own folders and sheet on first import.",
+        "height": 300,
+        "width": 1420,
+        "color": 7
+      },
+      "id": "57fe362b-074d-4ea2-973d-2a0821fa1ae6",
+      "name": "Sticky Note - Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup (about 15 minutes)\n\n1. Import this JSON into n8n (Workflows -> Import from File).\n2. Node 1: connect your Gmail account. Leave 'Simple' OFF - with Simple on, n8n strips attachments out of the trigger output and nothing will ever be saved.\n3. Create a Google Sheet called 'Attachment Log' with one tab and these headers in row 1: saved_at | file_name | drive_file_name | sender | subject | message_id | drive_link | drive_id\n4. Nodes 3 and 9: connect your Google account and pick that sheet in both. Node 3 reads it (the dedupe check), node 9 appends to it.\n5. Node 7: connect Google Drive and pick the folder attachments should land in - create one called 'Email Attachments' first if you like.\n6. Save the workflow, then switch it Active (top right). From then on it checks your inbox every hour.\n\nFirst-run tip: send yourself an email with a PDF attached and watch nodes 2, 7 and 9 light up.",
+        "height": 380,
+        "width": 1420,
+        "color": 7
+      },
+      "id": "1af3fa96-bc10-40cc-add2-8c1c65460b31",
+      "name": "Sticky Note - Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 1 - Intake\n\nNode 1 polls Gmail every hour. Node 2 unpacks each email into one item per attachment and carries the file itself through as binary data named 'data'. Sender, subject and message ID travel with it - they end up in the file name and the log.",
+        "height": 240,
+        "width": 640,
+        "color": 7
+      },
+      "id": "4d69d1b3-939e-4de1-9b0e-355a24a9c991",
+      "name": "Sticky Note - 1 Intake",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2 - Never save the same file twice\n\nNode 3 looks the message ID up in your Attachment Log. Node 4 marks an attachment 'already saved' only when both the message ID and the file name are already logged. Node 5 sends those to a dead end (5a) and lets everything new through. Gmail triggers can re-fire on old mail - this is what stops your Drive filling up with duplicates.",
+        "height": 240,
+        "width": 860,
+        "color": 7
+      },
+      "id": "965886a8-64f3-4876-9c99-9e94d1c45ae6",
+      "name": "Sticky Note - 2 Dedupe",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        900,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 3 - Save it, then write it down\n\nNode 6 renames each file to date_sender_original-name, so Drive sorts cleanly and same-name files never overwrite each other. Node 7 uploads the file to your Drive folder. Nodes 8-9 write the log row with the Drive link, so the sheet becomes your searchable index of every attachment you have ever been sent.",
+        "height": 240,
+        "width": 1080,
+        "color": 7
+      },
+      "id": "76dc6d42-522d-40d0-9312-2bd41c699559",
+      "name": "Sticky Note - 3 Save and Log",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Want this wired up for you?\n\nImporting this file is the easy part. Connecting it to your real inbox, your folder structure and your bookkeeping sheet - and making sure it keeps running - is the part that eats an afternoon.\n\n**Custom n8n Workflow Build - $99 flat.** You describe the job, I build the workflow around your accounts, test it end to end, and hand it over with a plain-English setup note. Two revision rounds included. If it turns out I can't build what you described, you get a full refund.\n\nOrder or ask first: https://ko-fi.com/workflowstash (see Services) - or email support@workflowstash.com for a straight yes/no on whether your idea is buildable. Asking costs nothing.",
+        "height": 300,
+        "width": 760,
+        "color": 4
+      },
+      "id": "c2f9efb2-e516-46f5-bad0-8185a37ab76d",
+      "name": "Sticky Note - Want It Done For You",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        -340
+      ]
+    }
+  ],
+  "connections": {
+    "1. New Email Arrives": {
+      "main": [
+        [
+          {
+            "node": "2. Extract Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Extract Attachments": {
+      "main": [
+        [
+          {
+            "node": "3. Check Saved Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Check Saved Log": {
+      "main": [
+        [
+          {
+            "node": "4. Flag Already Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Flag Already Saved": {
+      "main": [
+        [
+          {
+            "node": "5. Already Saved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Already Saved?": {
+      "main": [
+        [
+          {
+            "node": "5a. Skip - Already in Drive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "6. Rename File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Rename File": {
+      "main": [
+        [
+          {
+            "node": "7. Save to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Save to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "8. Prepare Log Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Prepare Log Row": {
+      "main": [
+        [
+          {
+            "node": "9. Log to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": [],
+  "active": false,
+  "meta": {}
+}
