@@ -196,6 +196,22 @@
         840,
         120
       ]
+    },
+    {
+      "parameters": {
+        "content": "## Want this wired up for you?\n\nImporting this file is the easy part. Connecting it to your real inbox, your folder structure and your bookkeeping sheet - and making sure it keeps running - is the part that eats an afternoon.\n\n**Custom n8n Workflow Build - $99 flat.** You describe the job, I build the workflow around your accounts, test it end to end, and hand it over with a plain-English setup note. Two revision rounds included. If it turns out I can't build what you described, you get a full refund.\n\nOrder or ask first: https://ko-fi.com/workflowstash (see Services) - or email support@workflowstash.com for a straight yes/no on whether your idea is buildable. Asking costs nothing.",
+        "height": 300,
+        "width": 760,
+        "color": 4
+      },
+      "id": "2721b4f9-1054-4a24-bd1a-395636deb12e",
+      "name": "Sticky Note - Want It Done For You",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        1080
+      ]
     }
   ],
   "connections": {
